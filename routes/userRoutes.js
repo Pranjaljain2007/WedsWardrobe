@@ -21,7 +21,7 @@ router.post("/address", authenticateToken, async (req, res) => {
   const uid = req.user.uid;
   const {
     addressLine1, addressLine2, city, state, zip, country,
-    firstName, lastName, email, mobile, pinCode
+    name, email, mobile, pinCode
   } = req.body;
 
   try {
@@ -29,8 +29,7 @@ router.post("/address", authenticateToken, async (req, res) => {
       { uid },
       {
         address: {
-          firstName,
-          lastName,
+          name,
           email,
           mobile,
           addressLine1,
@@ -76,6 +75,7 @@ router.get("/address", authenticateToken, async (req, res) => {
 router.put('/updateUserProfile', authenticateToken, async (req, res) => {
   const uid = req.user.uid;
   const {
+    phoneNumber,
     heightFeet,
     heightInches,
     weight,
@@ -84,7 +84,13 @@ router.put('/updateUserProfile', authenticateToken, async (req, res) => {
     primaryDressSize
   } = req.body;
 
+
+  if (!phoneNumber) {
+    return res.status(400).json({ message: "Phone number is required" });
+  }
+
   const updates = {
+    phoneNumber,
     heightFeet,
     heightInches,
     weight,
@@ -100,14 +106,12 @@ router.put('/updateUserProfile', authenticateToken, async (req, res) => {
 
 router.post("/userinfo", authenticateToken, async (req, res) => {
   const { uid, email, name } = req.user;
-  const [firstName, ...lastArr] = name.split(" ");
-  const lastName = lastArr.join(" ");
 
   try {
     let user = await User.findOne({ uid });
 
     if (!user) {
-      user = new User({ uid, email, firstName, lastName });
+      user = new User({ uid, email, Name });
       await user.save();
     }
 

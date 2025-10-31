@@ -1,25 +1,24 @@
 const mongoose = require('mongoose');
 
 const addressSchema = new mongoose.Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String },
+  Name: { type: String },
   email: { type: String, required: true },
-  mobile: { type: String, required: true },
   addressLine1: { type: String, required: true },
   addressLine2: { type: String },
   city: { type: String, required: true },
   state: { type: String, required: true },
   country: { type: String, default: 'India' },
   pinCode: { type: String, required: true }
-}, { _id: false }); // _id: false avoids generating _id for subdoc
+}, { _id: false });
 
 const userSchema = new mongoose.Schema({
-  uid: { type: String, default: null },
+  uid: { type: String, required: true, unique: true }, // Firebase UID
   email: { type: String, required: true, unique: true },
-  firstName: { type: String, required: true },
-  lastName: { type: String, default: '' },
+  name: { type: String, required: true },
 
-  // Measurements
+  phoneNumber: { type: String, default: '' },
+
+  // Measurements (optional)
   heightFeet: { type: String, default: '' },
   heightInches: { type: String, default: '' },
   weight: { type: String, default: '' },
@@ -28,7 +27,7 @@ const userSchema = new mongoose.Schema({
   primaryDressSize: { type: String, default: '' },
 
   // Address section
-  address: addressSchema
-});
+  address: { type: addressSchema, default: undefined }
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

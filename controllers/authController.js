@@ -1,35 +1,46 @@
 const User = require('../models/User');
 
-const validatePassword = (password) => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-    return regex.test(password);
-};
+/**
+ * Register a new user in the backend after Firebase authentication.
+ * Backend stores only uid, Name, and email.
+ */
 
 const registerUser = async (req, res) => {
-    const { email, firstName, lastName = '', uid = null } = req.body;
+    const { uid, email, name } = req.body;
 
-    if (!email || !firstName) {
-        return res.status(400).json({ message: 'All fields are required' });
+    // console.log("Signup request body:", req.body);
+
+
+    // Validate required fields
+    if (!uid || !email || !name) {
+        return res.status(400).json({ message: 'UID, Name, and Email are required' });
     }
 
-
     try {
-        const existingUser = await User.findOne({ email });
+        // Check if user already exists
+        const existingUser = await User.findOne({ uid });
         if (existingUser) {
-            return res.status(400).json({ message: 'Email already in use' });
+            return res.status(400).json({ message: 'User already exists' });
         }
 
+        // Save new user in the database
         const newUser = new User({
-            uid: uid || null,
+            uid,
             email,
-            firstName,
-            lastName: lastName || ''
+            name
         });
 
         await newUser.save();
-        res.status(201).json({ message: 'User registered successfully' });
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: newUser
+        });
     } catch (error) {
-        console.error(error);
+        console.error('MongoDB save error:', error);
+
+
+        console.error('Error registering user:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
