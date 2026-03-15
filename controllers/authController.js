@@ -2,7 +2,9 @@ const User = require('../models/User');
 
 /**
  * Register a new user in the backend after Firebase authentication.
- * Backend stores only uid, Name, and email.
+ * stores only uid, Name, and email.
+ * req → the request coming from the client (contains data like uid, email, name).
+ * res → the response we will send back to the client
  */
 
 const registerUser = async (req, res) => {
@@ -38,8 +40,6 @@ const registerUser = async (req, res) => {
         });
     } catch (error) {
         console.error('MongoDB save error:', error);
-
-
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Internal server error' });
     }

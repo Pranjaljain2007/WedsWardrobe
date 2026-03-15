@@ -1,18 +1,18 @@
 const mongoose = require('mongoose');
 
 const addressSchema = new mongoose.Schema({
-  Name: { type: String },
+  name: { type: String, required: true },
   email: { type: String, required: true },
   addressLine1: { type: String, required: true },
   addressLine2: { type: String },
   city: { type: String, required: true },
   state: { type: String, required: true },
-  country: { type: String, default: 'India' },
   pinCode: { type: String, required: true }
 }, { _id: false });
 
+
 const userSchema = new mongoose.Schema({
-  uid: { type: String, required: true, unique: true }, // Firebase UID
+  uid: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   name: { type: String, required: true },
 
@@ -27,7 +27,17 @@ const userSchema = new mongoose.Schema({
   primaryDressSize: { type: String, default: '' },
 
   // Address section
-  address: { type: addressSchema, default: undefined }
+  address: { type: addressSchema, default: undefined },
+
+  // Rental History: list of orders
+  rentalHistory: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order'  // Referencing the Order model
+    }
+  ]
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', userSchema);
+
+// if availabe then use it otherwise create one
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

@@ -16,6 +16,8 @@ router.get("/orders", authenticateToken, async (req, res) => {
   }
 });
 
+// no put req to add orders
+
 
 router.post("/address", authenticateToken, async (req, res) => {
   const uid = req.user.uid;
@@ -53,7 +55,6 @@ router.post("/address", authenticateToken, async (req, res) => {
 });
 
 
-
 router.get("/address", authenticateToken, async (req, res) => {
   const { uid } = req.user;
 
@@ -69,9 +70,6 @@ router.get("/address", authenticateToken, async (req, res) => {
 });
 
 
-
-
-
 router.put('/updateUserProfile', authenticateToken, async (req, res) => {
   const uid = req.user.uid;
   const {
@@ -84,25 +82,29 @@ router.put('/updateUserProfile', authenticateToken, async (req, res) => {
     primaryDressSize
   } = req.body;
 
-
   if (!phoneNumber) {
     return res.status(400).json({ message: "Phone number is required" });
   }
 
-  const updates = {
-    phoneNumber,
-    heightFeet,
-    heightInches,
-    weight,
-    bustSize,
-    bodyType,
-    primaryDressSize
-  };
+  try {
+    let user = await User.findOne({ uid });
 
-  await User.findOneAndUpdate({ uid }, updates, { new: true });
-  res.json({ message: "Updated successfully" });
+    if (!user) {
+      // If user doesn't exist yet, create one
+      user = new User({ uid, phoneNumber, heightFeet, heightInches, weight, bustSize, bodyType, primaryDressSize });
+      await user.save();
+    } else {
+      // Update existing user
+      Object.assign(user, { phoneNumber, heightFeet, heightInches, weight, bustSize, bodyType, primaryDressSize });
+      await user.save();
+    }
+
+    res.json({ message: "Profile updated successfully", user });
+  } catch (err) {
+    console.error("Error updating user profile:", err);
+    res.status(500).json({ message: "Server error updating profile", error: err.message });
+  }
 });
-
 
 router.post("/userinfo", authenticateToken, async (req, res) => {
   const { uid, email, name } = req.user;
@@ -111,7 +113,7 @@ router.post("/userinfo", authenticateToken, async (req, res) => {
     let user = await User.findOne({ uid });
 
     if (!user) {
-      user = new User({ uid, email, Name });
+      user = new User({ uid, email, name });
       await user.save();
     }
 

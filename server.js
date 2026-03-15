@@ -3,22 +3,25 @@ require('dotenv').config({ path: './.env' });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const wearRoutes = require('./routes/wearRoutes');
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
-
+const productRoutes = require("./routes/productRoutes")
+const orderRoutes = require("./routes/orderRoutes");
 
 
 // Connect to DB
 connectDB();
 
-// Middleware
+// Middleware - communicator bw frontend and backend
+app.use(express.json())
+
+
+//accept req from this server only
 app.use(cors({
   origin: 'https://rmww-frontend.onrender.com',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -26,21 +29,20 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
 
 // Serve static images from /data
 app.use("/images", express.static(path.join(__dirname, "data")));
 
 
-
 // API Routes
-app.use('/api', wearRoutes);
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
+app.use("/api/products", productRoutes);
+app.use('/api/orders', orderRoutes);
 
 
 
-// Health check
+// working check
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
